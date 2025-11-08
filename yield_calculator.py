@@ -1,6 +1,7 @@
 import requests
 import time
 import pandas as pd
+import numpy as np
 # --- 1. SIMULATED "AGRIVERSE" DATABASE ---
 # (All your dictionaries like yield_factors, farmer_purchases_db, etc. go here)
 # ... (I'm omitting them for brevity, but YOU must copy them here) ...
@@ -123,33 +124,64 @@ pest_alert_db = {
     "KHAMMAM":  {"alert_level": "High", "report_date": "2025-11-03"},
     "MEDAK":    {"alert_level": "Medium", "report_date": "2025-11-02"},
 }
-
+MLR_INTERCEPT = 0.536
+MLR_WEIGHTS = {
+    'Weather': 0.8250,
+    'Irrigation': 0.7000,
+    'IPQual': 0.3500,
+    'Management': 0.2500,
+    'Pestcon': 0.6500
+}
 
 # (Copy ALL your helper functions: get_weather_factor, get_ipqual_factor, etc.)
 
 # --- 2. FACTOR-CALCULATING FUNCTIONS ---
 
+API_KEY = "3eaf358b982d6a9ec3c254804098406f"
+API_URL = "https://openweathermap.org"
 def get_weather_factor(location, api_key):
-    # ... (Your full weather function code) ...
-    print(f"-> Calling Weather API for {location}...")
-    base_url = "http://api.openweathermap.org/data/2.5/weather"
-    params = {'q': f"{location},IN", 'appid': api_key, 'units': 'metric'}
+    params = {
+        'location': location,
+        'country': 'IN',
+        'appid': api_key, 
+        'units': 'metric',
+        'days': 30  
+    }
     try:
-        response = requests.get(base_url, params=params, timeout=5)
-        response.raise_for_status() 
+        response = requests.get(API_URL, params=params, timeout=15)
+        response.raise_for_status() # Raises an HTTPError for bad responses (4xx or 5xx)
         data = response.json()
-        temp = data['main']['temp'] 
-        print(f"--- API SUCCESS: Current temp in {location} is {temp}°C ---")
-        if 25 <= temp <= 35: return 1.0
-        elif temp > 35: return 0.7
-        elif temp < 25: return 0.85
-        else: return 0.9
+        daily_temps = []
+        for day in data.get('daily', []): 
+            # Example: Try to get the average temperature for the day
+            temp = day.get('temp_avg') 
+            if temp is not None:
+                daily_temps.append(temp)
+        
+        if not daily_temps:
+            print("--- API WARNING: No temperature data found in response structure. ---")
+            return 0.9  # Default safe factor
+        avg_temp = np.mean(daily_temps)  
+        OPTIMAL_TEMP_MIN = 25 
+        OPTIMAL_TEMP_MAX = 35        
+        if OPTIMAL_TEMP_MIN <= avg_temp <= OPTIMAL_TEMP_MAX:
+            Weather = 1.0  # Optimal conditions
+        elif avg_temp > OPTIMAL_TEMP_MAX:
+            # High temperature stress: Factor reduces by 0.05 for every 1°C over optimal
+            stress_level = (avg_temp - OPTIMAL_TEMP_MAX) * 0.05
+            Weather = max(0.70, 1.0 - stress_level) # Factor floor at 0.70
+        else:
+            # Low temperature stress (too cold)
+            Weather = 0.85 
+        print(f"--- API SUCCESS: 30-day Avg Temp: {avg_temp:.2f}°C ---")
+        return Weather
+        
     except requests.exceptions.RequestException as e:
-        print(f"--- API ERROR: {e} ---")
-        return 0.9
-    except KeyError:
-        print(f"--- API ERROR: Unexpected data ---")
-        return 0.9
+        print(f"--- API ERROR: API call failed or timed out: {e} ---")
+        return 0.90
+    except Exception as e:
+        print(f"--- UNEXPECTED ERROR during processing: {e} ---")
+        return 0.90
 
 # --- MODIFIED: This function now takes a parameter ---
 def get_irrigation_factor(irrigation_type):
@@ -200,6 +232,28 @@ def get_pestcon_factor(location):
 # yield_predictor_new = df.pivot_table(index='District', columns='Crop', values='Production')
 # yield_factors = yield_predictor_new.to_dict('index')
 
+#Adding weights using multiple linear regression:
+
+from sklearn.linear_model import LinearRegression
+data = {
+    'Actual_Yield': [11.43, 2.99, 1.54, 2.33, 1.05, 2.24, 2.15, 1.64, 2.37, 1.77], 
+    'Baseline_Factor': [12.95, 3.39, 1.75, 2.65, 1.19, 2.49, 2.38, 1.82, 2.64, 1.97], 
+    'Weather': [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9], 
+    'Irrigation': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+    'IPQual': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+    'Management': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 
+    'Pestcon': [0.98, 0.98, 0.98, 0.98, 0.98, 1, 1, 1, 1, 1]
+}
+
+weig = pd.DataFrame(data)
+
+features = ['Weather', 'Irrigation', 'IPQual', 'Management', 'Pestcon']
+X = weig[features]
+y = weig['Actual_Yield']
+
+model = LinearRegression()
+model.fit(X, y)
+
 def calculate_yield(data):
     try:
         # 1. Get data from the frontend
@@ -220,14 +274,25 @@ def calculate_yield(data):
         BaselineYield = area * factor
 
         # 3. Step B: Apply Adjustment Factors
+        
         weather = get_weather_factor(location, YOUR_API_KEY)
         irrigation = get_irrigation_factor(irrigation_type)
         ipqual = get_ipqual_factor(farmer_id)
         management = get_management_factor(farmer_id)
         pestcon = get_pestcon_factor(location)
         
+        # Start with the MLR base yield (Intercept)
+        AdjustedYield = MLR_INTERCEPT
+    
+         # Add the weighted impact of each factor
+        AdjustedYield += MLR_WEIGHTS['Weather'] * weather
+        AdjustedYield += MLR_WEIGHTS['Irrigation'] * irrigation
+        AdjustedYield += MLR_WEIGHTS['IPQual'] * ipqual
+        AdjustedYield += MLR_WEIGHTS['Management'] * management
+        AdjustedYield += MLR_WEIGHTS['Pestcon'] * pestcon
+        
         # 4. Final Calculation
-        AdjustedYield = BaselineYield * weather * irrigation * management * ipqual * pestcon
+        #AdjustedYield = BaselineYield * weather * irrigation * management * ipqual * pestcon
         
         x = AdjustedYield * 0.15
         z = AdjustedYield - x
