@@ -110,14 +110,14 @@ yield_factors = {
     }
 }
 farmer_purchases_db = {
-    "FARMER_101": {"seeds": "Premium", "fertilizer": "Standard"},
-    "FARMER_102": {"seeds": "Local", "fertilizer": "Standard"},
-    "FARMER_103": {"seeds": "Certified", "fertilizer": "Premium"},
+    "101": {"seeds": "Premium", "fertilizer": "Standard"},
+    "102": {"seeds": "Local", "fertilizer": "Standard"},
+    "103": {"seeds": "Certified", "fertilizer": "Premium"},
 }
 farmer_history_db = {
-    "FARMER_101": {"rating": 5, "training_completed": True},
-    "FARMER_102": {"rating": 3, "training_completed": False},
-    "FARMER_103": {"rating": 4, "training_completed": True},
+    "101": {"rating": 5, "training_completed": True},
+    "102": {"rating": 3, "training_completed": False},
+    "103": {"rating": 4, "training_completed": True},
 }
 pest_alert_db = {
     "ADILABAD": {"alert_level": "Low", "report_date": "2025-11-01"},
@@ -133,19 +133,18 @@ MLR_WEIGHTS = {
     'Pestcon': 0.6500
 }
 
-# (Copy ALL your helper functions: get_weather_factor, get_ipqual_factor, etc.)
 
 # --- 2. FACTOR-CALCULATING FUNCTIONS ---
 
-API_KEY = "3eaf358b982d6a9ec3c254804098406f"
-API_URL = "https://openweathermap.org"
+API_KEY = "ddad84c82bd8442ba0f74d5614dd201a"
+API_URL = "https://www.weatherbit.io/"
 def get_weather_factor(location, api_key):
     params = {
         'location': location,
         'country': 'IN',
-        'appid': api_key, 
+        'appid':API_KEY , 
         'units': 'metric',
-        'days': 30  
+        'days': 14  
     }
     try:
         response = requests.get(API_URL, params=params, timeout=15)
@@ -153,7 +152,6 @@ def get_weather_factor(location, api_key):
         data = response.json()
         daily_temps = []
         for day in data.get('daily', []): 
-            # Example: Try to get the average temperature for the day
             temp = day.get('temp_avg') 
             if temp is not None:
                 daily_temps.append(temp)
@@ -191,7 +189,7 @@ def get_irrigation_factor(irrigation_type):
     elif irrigation_type.upper() == 'R':
         return 0.95 # Rainfed / Partial
     else:
-        return 1.0 # Default if unknown
+        return 0.5 # Default if unknown
 
 def get_ipqual_factor(farmer_id):
     # ... (Your full ipqual function) ...
@@ -201,7 +199,7 @@ def get_ipqual_factor(farmer_id):
         if seed_type == "Premium": return 1.05
         elif seed_type == "Certified": return 1.0
         elif seed_type == "Local": return 0.9
-    return 1.0
+    return 0.7
 
 def get_management_factor(farmer_id):
     # ... (Your full management function) ...
@@ -211,7 +209,7 @@ def get_management_factor(farmer_id):
         if history["rating"] >= 4 and history["training_completed"]: return 1.05
         elif history["rating"] >= 3: return 1.0
         else: return 0.9
-    return 1.0
+    return 0.75
 
 def get_pestcon_factor(location):
     # ... (Your full pestcon function) ...
@@ -227,10 +225,10 @@ def get_pestcon_factor(location):
 # This REPLACES your main() function
 # It takes data *in* and returns a dictionary *out*
 
-# df = pd.read_csv("India Agriculture Crop Production.csv")
-# yield_predictor = df[['District', 'Crop', 'Production']]
-# yield_predictor_new = df.pivot_table(index='District', columns='Crop', values='Production')
-# yield_factors = yield_predictor_new.to_dict('index')
+#  df = pd.read_csv("India Agriculture Crop Production.csv")
+#  yield_predictor = df[['District', 'Crop', 'Production']]
+#  yield_predictor_new = df.pivot_table(index='District', columns='Crop', values='Production')
+#  yield_factors = yield_predictor_new.to_dict('index')
 
 #Adding weights using multiple linear regression:
 
@@ -248,32 +246,31 @@ data = {
 weig = pd.DataFrame(data)
 
 features = ['Weather', 'Irrigation', 'IPQual', 'Management', 'Pestcon']
-X = weig[features]
+x = weig[features]
 y = weig['Actual_Yield']
 
 model = LinearRegression()
-model.fit(X, y)
+model.fit(x, y)
 
 def calculate_yield(data):
     try:
-        # 1. Get data from the frontend
+        
         farmer_id = data['farmer_id'].upper()
         location = data['location'].upper()
         area = float(data['area'])
         crop = data['crop']
         irrigation_type = data['irrigation_type'] # e.g., "I" or "R"
 
-        # !! Use your real API key here
-        YOUR_API_KEY = "a54e9312ddd57ba368ca6e466686a2eb"
+        YOUR_API_KEY = "ddad84c82bd8442ba0f74d5614dd201a"
 
-        # 2. Step A: Baseline Estimate
+        
         factor = yield_factors.get(location, {}).get(crop)
         if not factor:
             return {"error": f"No yield data for {crop} in {location}."}
         
         BaselineYield = area * factor
 
-        # 3. Step B: Apply Adjustment Factors
+        
         
         weather = get_weather_factor(location, YOUR_API_KEY)
         irrigation = get_irrigation_factor(irrigation_type)
@@ -281,24 +278,23 @@ def calculate_yield(data):
         management = get_management_factor(farmer_id)
         pestcon = get_pestcon_factor(location)
         
-        # Start with the MLR base yield (Intercept)
+        
         AdjustedYield = MLR_INTERCEPT
     
-         # Add the weighted impact of each factor
+        
         AdjustedYield += MLR_WEIGHTS['Weather'] * weather
         AdjustedYield += MLR_WEIGHTS['Irrigation'] * irrigation
         AdjustedYield += MLR_WEIGHTS['IPQual'] * ipqual
         AdjustedYield += MLR_WEIGHTS['Management'] * management
         AdjustedYield += MLR_WEIGHTS['Pestcon'] * pestcon
         
-        # 4. Final Calculation
-        #AdjustedYield = BaselineYield * weather * irrigation * management * ipqual * pestcon
+        AdjustedYield = AdjustedYield + (BaselineYield * weather * irrigation * ipqual * management * pestcon)
         
         x = AdjustedYield * 0.15
         z = AdjustedYield - x
         y = AdjustedYield + x
         
-        # 5. Return a dictionary (which becomes JSON)
+        
         return {
             "success": True,
             "baseline_yield": f"{BaselineYield:.2f}",
