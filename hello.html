@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agri Verse — Choose a Role</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    
+    /* Put the video behind everything (no stacking fights) */
+#bgVideo {
+  position: fixed;        /* fixed to viewport */
+  inset: 0;               /* top:0; right:0; bottom:0; left:0; */
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;      /* cover like background-size: cover */
+  z-index: -1;            /* <- CRUCIAL: place video behind page content */
+  pointer-events: none;   /* allow clicks through to UI */
+  filter: saturate(1.05) brightness(0.95); /* optional visual tweak */
+}
+
+/* subtle overlay layer to darken background for readability */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(6,25,10,0.22);
+  z-index: 0;             /* sits above video (-1) but below page content (1) */
+  pointer-events: none;
+}
+
+/* Ensure page content is above overlay (and thus above video) */
+nav, header, main, section, footer, .hero, .card, .modal, .toast {
+  position: relative;     /* only if needed */
+  z-index: 1;             /* ensure everything is above the overlay */
+}
+
+/* Mobile fallback: hide video on small screens (saves bandwidth) */
+@media (max-width: 640px) {
+  #bgVideo { display: none; }
+  body {
+    background-image: url('video-poster.jpg'); /* use a small poster file */
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+/* Respect reduced-motion preference - optional */
+@media (prefers-reduced-motion: reduce) {
+  #bgVideo { display: none; }
+  body { background-image: url('video-poster.jpg'); }
+}
+
+    :root {
+    --primary: #2e7d32;
+    --primary-light: #4caf50;
+    --primary-dark: #1b5e20;
+    --secondary: #ffa000;
+    --secondary-light: #ffc107;
+    --dark: #1a1a1a;
+    --gray: #6c757d;
+    --light: #f8f9fa;
+    --white: #ffffff;
+    --retailer: #6a1b9a; /* retailer button color */
+}
+
+/* Base */
+*{box-sizing:border-box}
+html, body { height:100%; }
+html { scroll-behavior: smooth; }
+body {
+    color: var(--dark);
+    line-height: 1.6;
+    background-color: var(--light);
+    font-family: 'Nunito', sans-serif;
+    margin: 0;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+}
+
+
+
+
+
+
+    /* Reset & base */
+    :root{
+      --bg-1: #0f9d58;
+      --bg-2: #2fbf71;
+      --card-bg: rgba(255,255,255,0.95);
+      --muted: #6c757d;
+      --accent: #0b6b3a;
+      --glass: rgba(255,255,255,0.06);
+      --shadow: 0 12px 30px rgba(11,27,16,0.15);
+      --card-shadow-hover: 0 18px 40px rgba(11,27,16,0.18);
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      min-height:100vh;
+      color:#072014;
+      background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 60%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+    }
+
+    /* Top nav
+    .nav {
+      width:100%;
+      max-width:1200px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:20px 28px;
+      margin-top:16px;
+      color: #fff;
+    }
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:700;
+      font-size:20px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+    .brand .logo {
+      width:36px;
+      height:36px;
+      border-radius:8px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      color:#fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .nav-links{
+      display:flex;
+      gap:18px;
+      align-items:center;
+    }
+    .nav-links a{
+      color:rgba(255,255,255,0.95);
+      text-decoration:none;
+      font-weight:600;
+      font-size:14px;
+      padding:6px 10px;
+    }
+    .nav-links a:hover{ text-decoration:underline; } */
+    /* Video full-screen background */
+    /* ---------- Background video + overlay ---------- */
+
+/* make the video act like a full-screen background
+#bgVideo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;         /* behave like background-size: cover */
+  /* z-index: 0;
+  filter: saturate(1.05) brightness(0.95); /* optional visual tuning */
+  /* pointer-events: none;      /* allow clicks through to UI */
+/* } */ */ */
+
+/* subtle dark/green overlay so text stays legible */
+/* body::before {
+  content: "";
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  /* background: linear-gradient(rgba(6,25,10,0.18), rgba(6,25,10,0.22));
+  z-index: 0;
+  pointer-events: none;
+} */ 
+
+/* ensure site UI appears above the video + overlay */
+/* nav, header, main, section, footer, .hero, .card, .modal, .toast {
+  position: relative;
+  z-index: 1;
+} */
+
+/* Mobile fallback: hide video on small screens (save bandwidth),
+   and use the poster image as background instead */
+/* @media (max-width: 640px) {
+  #bgVideo { display: none; }
+  body {
+    background-image: url('video-poster.jpg'); /* keep a small poster image in project root */
+    /* background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  } */
+/* }  */
+
+/* Put the video behind everything (no stacking fights) */
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ---------- Logo sizing (same as before) ---------- */
+.logo-img {
+  height: 50px;
+  width: auto;
+  display: block;
+  transition: transform 0.25s ease;
+}
+.logo-img:hover { transform: scale(1.05); }
+.navbar.scrolled .logo-img { height: 40px; }
+
+/* ---------- Ensure readable panels/cards above the video ---------- */
+/* your .card already has a solid or semi-opaque background.
+   If you'd like to reduce card opacity (so background shows through)
+   use rgba backgrounds rather than opacity on whole element
+   (so text/buttons remain fully opaque). Example: */
+
+.card {
+  /* replace any solid color with a semi-transparent white */
+  background: rgba(255,255,255,0.85);  /* change the last value (0.85) to 0.5 if you want more transparency */
+  /* If you want exactly opacity 0.5 for cards' background without affecting children:
+     use rgba(255,255,255,0.5) above. Do not use `.card { opacity: 0.5 }` (that would fade everything). */
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(11,27,16,0.12);
+}
+
+/* Optional: subtle glass effect for hero container so it blends with video */
+.hero {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(6px) saturate(1.05);
+}
+
+/* ---------- Accessibility / performance notes (optional helpers) ---------- */
+/* Pause video on reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  #bgVideo {
+    animation: none;
+    transition: none;
+    -webkit-transition: none;
+    /* stop playback on browsers that respect it (best-effort) */
+    display: none;
+  }
+  body { background-image: url('video-poster.jpg'); }
+}
+
+/* If you use a poster image, make sure it's a small file (for mobile). */
+
+/* ---------- Small-screen polish: reduce hero top margin so content isn't pushed offscreen ---------- */
+@media (max-width: 780px) {
+  .hero { margin-top: 90px; padding: 20px; }
+}
+
+
+
+
+
+
+
+
+
+
+/* # Navbar styles */
+    .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1.25rem 0;
+    transition: padding 0.3s ease;
+    z-index: 1002;
+    background: linear-gradient(90deg, rgba(46,125,50,0.9), rgba(14,65,30,0.85));
+    opacity: 1;
+    backdrop-filter: blur(4px);
+}
+.navbar.scrolled { padding: 0.6rem 0; box-shadow: 0 2px 16px rgba(0,0,0,0.18); opacity: 0.7;}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.navbar-brand { font-size: 1.4rem; font-weight: 700; color: var(--white); text-decoration: none; display: flex; gap: 0.5rem; align-items: center; }
+.navbar-nav { display: flex; list-style: none; gap: 2rem; align-items: center; }
+.nav-link { color: var(--white); text-decoration: none; font-weight: 600; transition: color 0.3s; }
+.nav-link:hover { color: var(--secondary-light); }
+.nav-btn { padding: 0.45rem 1.2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: all 0.3s; background-color: var(--secondary); color: var(--white); border: 2px solid var(--secondary); }
+.nav-btn:hover { background-color: transparent; color: var(--secondary); }
+
+/* Logo image styling */
+.logo-img {
+    height: 50px;              /* adjust logo size */
+    width: auto;
+    vertical-align: middle;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+}
+.navbar.scrolled .logo-img {
+    height: 40px;
+}
+
+
+    /* Main hero area */
+    .hero {
+      width:100%;
+      max-width:1200px;
+      margin:36px 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border-radius:18px;
+      padding:36px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
+      margin-top: 120px;
+    }
+    .hero-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:26px;
+    }
+    .title {
+      color:#f7fff8;
+    }
+    .title h1{
+      margin:0;
+      font-size:28px;
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+    .title p{
+      margin:6px 0 0 0;
+      color:#e8f7ec;
+      opacity:0.95;
+      font-size:14px;
+    }
+
+    /* Roles grid */
+    .roles {
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:28px;
+      align-items:end;
+      padding-top:8px;
+    }
+    @media (max-width:900px){
+      .roles { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width:560px){
+      .roles { grid-template-columns: 1fr; gap:18px; }
+      .nav { padding:12px 16px; }
+      .hero { padding:20px; margin:18px; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+      transition: transform .28s cubic-bezier(.2,.9,.1,1), box-shadow .28s;
+      box-shadow: 0 8px 26px rgba(7,20,12,0.12);
+      position:relative;
+      min-height:260px;
+      opacity: 0.8;
+    }
+    .card:hover{
+      transform: translateY(-8px);
+      box-shadow: var(--card-shadow-hover);
+    }
+    .card .icon-wrap{
+      width:180px;
+      height:140px;
+      border-radius:10px;
+      background:linear-gradient(180deg, rgba(3,75,34,0.04), rgba(3,75,34,0.02));
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      opacity: 1;
+    }
+    .role-title{
+      margin:0;
+      font-size:18px;
+      font-weight:700;
+      color:var(--accent);
+      opacity: 1;
+    }
+    .role-desc{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      padding:0 6px;
+    }
+
+    .card button{
+      margin-top:auto;
+      border:0;
+      background: linear-gradient(90deg, var(--bg-1), var(--bg-2));
+      color:white;
+      padding:10px 16px;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 8px 20px rgba(10,60,30,0.22);
+      transition: transform .15s ease;
+      opacity: 1;
+    }
+    .card button:active { transform: translateY(2px); }
+    .card.active {
+      outline: 3px solid rgba(11,107,58,0.12);
+      box-shadow: 0 22px 60px rgba(2,42,20,0.22);
+      transform: translateY(-10px);
+    }
+
+    /* Footer small note */
+    .footer-note{
+      margin-top:18px;
+      text-align:center;
+      color:rgba(255,255,255,0.9);
+      font-size:13px;
+    }
+
+    /* toast */
+    .toast {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:28px;
+      background:#0b6b3a;
+      color:white;
+      padding:12px 18px;
+      border-radius:999px;
+      box-shadow: 0 10px 30px rgba(6,45,22,0.28);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .28s, transform .28s;
+      font-weight:600;
+      z-index:999;
+    }
+    .toast.show{
+      opacity:1;
+      pointer-events:auto;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    /* subtle credit row on the cards with icons */
+    .svg-illu { width:110px; height:90px; display:block; }
+
+  </style>
+</head>
+<body>
+     <!-- Background video
+<video id="bgVideo" autoplay muted loop playsinline preload="auto" poster="video-poster.jpg" aria-hidden="true">
+  <source src="/Generating_a_Green_Field_Video.mp4" type="video/mp4"> -->
+  <!-- Background video (place as first element in <body>) -->
+<video id="bgVideo" autoplay muted loop playsinline preload="auto" poster="video-poster.jpg" aria-hidden="true">
+  <source src="/Untitled design.mp4" type="video/mp4">
+  Your browser does not support HTML5 video.
+</video>
+
+   <!-- Navigation -->
+    <nav class="navbar" id="mainNav">
+        <div class="navbar-container">
+            <!-- <a class="navbar-brand" href="#page-top">
+                <i class="fas fa-leaf"></i> AgriVerse
+            </a> -->
+            <a class="navbar-brand" href="#page-top">
+    <img src="/WhatsApp Image 2025-11-07 at 01.54.15.jpeg" alt="AgriVerse Logo" class="logo-img">
+</a>
+
+            <ul class="navbar-nav">
+                <li><a class="nav-link" href="/index.html#about">About</a></li>
+                <li><a class="nav-link" href="/index.html#how-it-works">How It Works</a></li>
+                <li><a class="nav-link" href="/index.html#perspectives">Perspectives</a></li>
+                <li><a class="nav-link" href="/index.html#contact">Contact</a></li>
+                <li><a class="nav-btn" href="/hello.html">Login / Sign Up</a></li>
+            </ul>
+            <button class="mobile-menu-btn" style="display: none;">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+  <!-- <nav class="nav" role="navigation" aria-label="Main Navigation">
+    <div class="brand" aria-hidden="false"> -->
+      <!-- <div class="logo">AV</div>
+       <a class="navbar-brand" href="#page-top">
+    <img src="/WhatsApp Image 2025-11-07 at 01.54.15.jpeg" alt="AgriVerse Logo" class="logo-img">
+</a> -->
+
+      <!-- <div>
+        <div style="font-size:16px">Agri Verse</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.85); font-weight:600">Grow. Fund. Supply.</div>
+      </div>
+    </div>
+
+    <div class="nav-links" aria-hidden="false">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <a href="#" style="background:rgba(255,255,255,0.08); padding:6px 10px; border-radius:8px">Login</a>
+    </div>
+  </nav> -->
+
+  <main class="hero" role="main">
+    <div class="hero-header">
+      <div class="title">
+        <h1>Welcome to Agri Verse</h1>
+        <p>Select your role to continue — Farmer, Investors or Retailers</p>
+      </div>
+
+      <div style="text-align:right;">
+        <div style="font-size:12px; color:rgba(255,255,255,0.85)">Secure • Verified • Community-first</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75); margin-top:6px">Token: AgriVerse (AGV)</div>
+      </div>
+    </div>
+
+    <section class="roles" aria-label="Role selection">
+      <!-- Farmer card -->
+      <article class="card" data-role="farmer" tabindex="0" role="button" aria-pressed="false">
+        <div class="icon-wrap" aria-hidden="true">
+          <!-- Simple farm SVG illustration -->
+          <svg class="svg-illu" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <rect x="0" y="80" width="200" height="60" fill="#e8f7ec"/>
+            <path d="M18 78 L60 40 L102 78 Z" fill="#0f9d58" opacity="0.95"/>
+            <rect x="72" y="50" width="38" height="28" rx="4" fill="#fff"/>
+            <circle cx="150" cy="48" r="18" fill="#ffeaa7" opacity="0.95"/>
+            <rect x="10" y="86" width="60" height="24" rx="3" fill="#c7f0d4"/>
+          </svg>
+        </div>
+        <h3 class="role-title">Farmer</h3>
+        <p class="role-desc">Request funding, list projects, and manage harvests for your land.</p>
+        <button class="select-btn">I'm a Farmer</button>
+      </article>
+
+      <!-- Investors card -->
+      <article class="card" data-role="investor" tabindex="0" role="button" aria-pressed="false">
+        <div class="icon-wrap" aria-hidden="true">
+          <!-- Simple investor SVG -->
+          <svg class="svg-illu" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <rect x="0" y="15" width="200" height="110" rx="10" fill="#f1fff6"/>
+            <path d="M40 92 L80 44 L120 92 L160 50" stroke="#0b6b3a" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="40" cy="92" r="10" fill="#dbffe8"/>
+            <circle cx="120" cy="92" r="10" fill="#dbffe8"/>
+            <rect x="140" y="18" width="40" height="20" rx="4" fill="#c7f0d4"/>
+          </svg>
+        </div>
+        <h3 class="role-title">Investors</h3>
+        <p class="role-desc">Explore verified farm projects and invest with transparency & tokenized returns.</p>
+        <button class="select-btn">I'm an Investor</button>
+      </article>
+
+      <!-- Retailers card -->
+      <article class="card" data-role="retailer" tabindex="0" role="button" aria-pressed="false">
+        <div class="icon-wrap" aria-hidden="true">
+          <!-- Simple retailer SVG -->
+          <svg class="svg-illu" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <rect x="0" y="10" width="200" height="120" rx="12" fill="#f8fff9"/>
+            <rect x="28" y="36" width="144" height="36" rx="6" fill="#e6fff0"/>
+            <circle cx="60" cy="92" r="12" fill="#dfffe5"/>
+            <circle cx="140" cy="92" r="12" fill="#dfffe5"/>
+            <path d="M38 56 L54 40 L78 56 L100 40 L124 56 L150 40" stroke="#0b6b3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="role-title">Suppliers</h3>
+        <p class="role-desc">Source quality verified produce and farm inputs directly from project owners.</p>
+        <button class="select-btn">I'm a Supplier</button>
+      </article>
+    </section>
+
+    <div class="footer-note">Choose one to continue — you'll get tailored onboarding and dashboards.</div>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Selected</div>
+
+  <script>
+    // Simple JS: mark a card as active when clicked or keyboard-activated.
+    (function(){
+      const cards = Array.from(document.querySelectorAll('.card'));
+      const toast = document.getElementById('toast');
+
+      function clearActive() {
+        cards.forEach(c => {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
+      }
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add('show');
+        clearTimeout(window._ag_toast);
+        window._ag_toast = setTimeout(()=> toast.classList.remove('show'), 2500);
+      }
+
+      cards.forEach(card => {
+        const btn = card.querySelector('.select-btn');
+
+        function activate() {
+          clearActive();
+          card.classList.add('active');
+          card.setAttribute('aria-pressed', 'true');
+          // Here you can redirect to a role-specific path, e.g.
+          // location.href = `/onboard?role=${card.dataset.role}`;
+          showToast('Role selected: ' + capitalize(card.dataset.role));
+        }
+
+        btn.addEventListener('click', activate);
+
+        // make whole card keyboard/enter clickable
+        card.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter' || ev.key === ' ') {
+            ev.preventDefault();
+            activate();
+          }
+        });
+
+        // Optionally clicking the card itself (outside button)
+        card.addEventListener('click', (ev) => {
+          // ignore clicks on the inner button (button already handles)
+          if (ev.target.tagName.toLowerCase() === 'button') return;
+          activate();
+        });
+      });
+
+      function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+      // Accessibility: focus first card on load
+      if (cards[0]) cards[0].focus();
+    })();
+  </script>
+</body>
+</html>
