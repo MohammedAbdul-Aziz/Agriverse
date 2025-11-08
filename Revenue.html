@@ -171,6 +171,7 @@
                 // 3. Display the result from the server
                 if (result.success) {
                     outputElement.textContent = `
+    Base Yield: ${result.baseline_yield} t
     Adjusted Yield: ${result.adjusted_yield} t
     Yield Range:    ${result.yield_range_min} t - ${result.yield_range_max} t
     
